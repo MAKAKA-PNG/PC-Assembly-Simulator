@@ -1,15 +1,20 @@
 using UnityEngine;
 
 /// <summary>
-/// Связывает 3D-модель комплектующего с информационными данными
-/// и хранит его состояние установки в текущей сборке.
+/// Связывает 3D-модель комплектующего с информационными данными,
+/// профилем совместимости и состоянием установки в текущей сборке.
 /// </summary>
 [DisallowMultipleComponent]
 public sealed class HardwareComponentView : MonoBehaviour
 {
+    [Header("Component data")]
     [SerializeField] private HardwareComponentData data;
 
+    [Header("Compatibility")]
+    [SerializeField] private HardwareCompatibilityProfile compatibilityProfile;
+
     public HardwareComponentData Data => data;
+    public HardwareCompatibilityProfile CompatibilityProfile => compatibilityProfile;
     public ComponentSlot CurrentSlot { get; private set; }
     public bool IsInstalled => CurrentSlot != null;
 

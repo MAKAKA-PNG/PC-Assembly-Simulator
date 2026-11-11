@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02e39fcbe1a3a0f42a3156ca0ca0f9fa, type: 3}
+  m_Name: HardwareCompatibilityProfile
+  m_EditorClassIdentifier: Assembly-CSharp::HardwareCompatibilityProfile
+  socket: 
+  supportedSockets: []
+  memoryStandard: 
+  memoryFormFactor: 
+  supportedMemoryFormFactors: []
+  formFactor: 
+  supportedMotherboardFormFactors: []
+  supportedPsuFormFactors: []
+  interfaceType: 
+  supportedInterfaces: []
+  lengthMm: 0
+  heightMm: 0
+  maxGpuLengthMm: 0
+  maxCpuCoolerHeightMm: 0
+  powerDrawWatts: 0
+  ratedPowerWatts: 0

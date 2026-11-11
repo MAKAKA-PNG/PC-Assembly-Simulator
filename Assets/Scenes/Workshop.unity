@@ -132,6 +132,7 @@ GameObject:
   - component: {fileID: 55825483}
   - component: {fileID: 55825484}
   - component: {fileID: 55825485}
+  - component: {fileID: 55825486}
   m_Layer: 0
   m_Name: SceneSystems
   m_TagString: Untagged
@@ -231,6 +232,20 @@ MonoBehaviour:
   panelRoot: {fileID: 413558012}
   titleText: {fileID: 622911100}
   detailsText: {fileID: 1037541434}
+--- !u!114 &55825486
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 55825480}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7057504534a8c9746a8af5f87040a16d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CompatibilityChecker
+  basePowerReserveWatts: 100
+  powerSafetyFactor: 1.25
 --- !u!1 &245537198
 GameObject:
   m_ObjectHideFlags: 0
@@ -494,6 +509,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HardwareComponentView
   data: {fileID: 11400000, guid: 30a71ed9012a4f94c8f2eef7ea76e788, type: 2}
+  compatibilityProfile: {fileID: 0}
 --- !u!1 &320699665
 GameObject:
   m_ObjectHideFlags: 0
@@ -2581,6 +2597,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HardwareComponentView
   data: {fileID: 11400000, guid: fefe2fbf86b7624478b53c3d8e1f57cf, type: 2}
+  compatibilityProfile: {fileID: 0}
 --- !u!65 &1467349685
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -3138,6 +3155,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HardwareComponentView
   data: {fileID: 11400000, guid: bd651484575624f4aaadb25deb321321, type: 2}
+  compatibilityProfile: {fileID: 0}
 --- !u!1 &1767401987
 GameObject:
   m_ObjectHideFlags: 0
@@ -3460,6 +3478,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HardwareComponentView
   data: {fileID: 11400000, guid: fefe2fbf86b7624478b53c3d8e1f57cf, type: 2}
+  compatibilityProfile: {fileID: 0}
 --- !u!1 &2103148927
 GameObject:
   m_ObjectHideFlags: 0
@@ -3587,6 +3606,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HardwareComponentView
   data: {fileID: 11400000, guid: efe97a344589e354b82a28f8a8779f6a, type: 2}
+  compatibilityProfile: {fileID: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
