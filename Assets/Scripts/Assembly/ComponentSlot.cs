@@ -12,6 +12,7 @@ public sealed class ComponentSlot : MonoBehaviour
     [SerializeField] private string slotId = "CPU_SOCKET";
     [SerializeField] private HardwareComponentType acceptedType = HardwareComponentType.Processor;
     [SerializeField] private Transform snapPoint;
+    [SerializeField] private ComponentSlot prerequisiteSlot;
 
     public string SlotId => slotId;
     public HardwareComponentType AcceptedType => acceptedType;
@@ -50,6 +51,12 @@ public sealed class ComponentSlot : MonoBehaviour
         if (component.Data.ComponentType != acceptedType)
         {
             reason = $"Неверный тип детали. Слот {slotId} принимает: {acceptedType}.";
+            return false;
+        }
+
+        if (prerequisiteSlot != null && !prerequisiteSlot.IsOccupied)
+        {
+            reason = $"Сначала установите деталь в слот {prerequisiteSlot.SlotId}.";
             return false;
         }
 

@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 /// <summary>Необязательная панель вывода результата AssemblyValidator.</summary>
 public sealed class AssemblyValidationPanel : MonoBehaviour
@@ -32,5 +33,12 @@ public sealed class AssemblyValidationPanel : MonoBehaviour
     {
         if (panelRoot != null)
             panelRoot.SetActive(false);
+    }
+
+    private void Update()
+    {
+        if (panelRoot != null && panelRoot.activeSelf &&
+            Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+            Hide();
     }
 }

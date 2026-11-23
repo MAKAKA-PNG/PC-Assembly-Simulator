@@ -170,14 +170,23 @@ public sealed class PlacementController : MonoBehaviour
         Ray ray = worldCamera.ScreenPointToRay(mousePosition);
 
         ComponentSlot nextSlot = null;
-        if (Physics.Raycast(
-                ray,
-                out RaycastHit hit,
-                maxRayDistance,
-                slotLayers,
-                QueryTriggerInteraction.Collide))
+        float nearestDistance = float.PositiveInfinity;
+        bool foundMatchingType = false;
+        foreach (RaycastHit hit in Physics.RaycastAll(
+                     ray, maxRayDistance, slotLayers, QueryTriggerInteraction.Collide))
         {
-            nextSlot = hit.collider.GetComponentInParent<ComponentSlot>();
+            ComponentSlot slot = hit.collider.GetComponentInParent<ComponentSlot>();
+            if (slot == null)
+                continue;
+
+            bool matches = slot.AcceptedType == selectedComponent.Data.ComponentType;
+            if ((foundMatchingType && !matches) ||
+                (matches == foundMatchingType && hit.distance >= nearestDistance))
+                continue;
+
+            nextSlot = slot;
+            foundMatchingType = matches;
+            nearestDistance = hit.distance;
         }
 
         if (nextSlot == hoveredSlot)
