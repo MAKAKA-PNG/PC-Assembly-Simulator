@@ -13,10 +13,16 @@ MonoBehaviour:
   m_Name: MOTHERBOARD_DEMO_001
   m_EditorClassIdentifier: Assembly-CSharp::HardwareComponentData
   componentId: MOTHERBOARD_DEMO_001
-  displayName: "\u0422\u0435\u0441\u0442\u043E\u0432\u0430\u044F \u043F\u043B\u0430\u0442\u0430"
+  displayName: "\u041C\u0430\u0442\u0435\u0440\u0438\u043D\u0441\u043A\u0430\u044F
+    \u043F\u043B\u0430\u0442\u0430 microATX"
   componentType: 1
   description: "\u041C\u0430\u0442\u0435\u0440\u0438\u043D\u0441\u043A\u0430\u044F
-    \u043F\u043B\u0430\u0442\u0430"
-  compatibilityNotes: 
+    \u043F\u043B\u0430\u0442\u0430 microATX \u0432 \u0441\u043E\u0441\u0442\u0430\u0432\u0435
+    \u0443\u0447\u0435\u0431\u043D\u043E\u0439 \u0441\u0431\u043E\u0440\u043A\u0438."
+  compatibilityNotes: "\u041F\u0430\u0440\u0430\u043C\u0435\u0442\u0440\u044B \u0443\u0447\u0435\u0431\u043D\u043E\u0439
+    \u043A\u043E\u043D\u0444\u0438\u0433\u0443\u0440\u0430\u0446\u0438\u0438"
   specifications:
-  - LGA 775
+  - AM4
+  - DDR4 DIMM
+  - microATX
+  - SATA

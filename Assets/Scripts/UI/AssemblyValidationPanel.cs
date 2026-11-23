@@ -35,6 +35,20 @@ public sealed class AssemblyValidationPanel : MonoBehaviour
             panelRoot.SetActive(false);
     }
 
+    public void ShowCompatibility(bool compatible, System.Collections.Generic.List<string> errors, int skipped)
+    {
+        if (detailsText == null)
+            return;
+
+        detailsText.text += compatible
+            ? "\nСовместимость проверена."
+            : "\nСовместимость не подтверждена.";
+        foreach (string error in errors)
+            detailsText.text += "\n• " + error;
+        if (skipped > 0)
+            detailsText.text += $"\nПропущено проверок: {skipped}.";
+    }
+
     private void Update()
     {
         if (panelRoot != null && panelRoot.activeSelf &&

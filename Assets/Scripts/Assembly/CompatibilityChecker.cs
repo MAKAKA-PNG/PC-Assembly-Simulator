@@ -11,6 +11,8 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public sealed class CompatibilityChecker : MonoBehaviour
 {
+    [SerializeField] private HardwareComponentView fixedCase;
+    [SerializeField] private AssemblyValidationPanel resultPanel;
     [Header("Power estimate")]
     [Tooltip("Дополнительный резерв мощности, учитываемый в упрощённой учебной оценке.")]
     [Min(0)] [SerializeField] private int basePowerReserveWatts = 100;
@@ -22,15 +24,31 @@ public sealed class CompatibilityChecker : MonoBehaviour
     /// <summary>Назначается на Button -> OnClick() в Inspector.</summary>
     public void CheckCompatibility()
     {
+        bool compatible = Evaluate(out int performedChecks, out var errors, out var skipped);
+        string report = BuildReport(compatible, performedChecks, errors, skipped);
+        if (compatible) Debug.Log(report, this);
+        else Debug.LogWarning(report, this);
+        CheckCompleted?.Invoke(compatible, report);
+        if (resultPanel != null)
+            resultPanel.ShowCompatibility(compatible, errors, skipped.Count);
+    }
+
+    public bool Evaluate(out int performedChecks, out List<string> failures, out List<string> skipped)
+    {
         List<HardwareComponentView> installed = FindInstalledComponents();
+        // The rule callbacks share the same list as the caller.
         List<string> errors = new List<string>();
-        List<string> skipped = new List<string>();
-        int performedChecks = 0;
+        failures = errors;
+        skipped = new List<string>();
+        performedChecks = 0;
 
         HardwareComponentView motherboard = FindFirst(installed, HardwareComponentType.Motherboard);
         HardwareComponentView cpu = FindFirst(installed, HardwareComponentType.Processor);
         HardwareComponentView cooler = FindFirst(installed, HardwareComponentType.CpuCooler);
         HardwareComponentView computerCase = FindFirst(installed, HardwareComponentType.Case);
+        if (computerCase == null && fixedCase != null && fixedCase.Data != null &&
+            fixedCase.Data.ComponentType == HardwareComponentType.Case)
+            computerCase = fixedCase;
         HardwareComponentView gpu = FindFirst(installed, HardwareComponentType.GraphicsCard);
         HardwareComponentView psu = FindFirst(installed, HardwareComponentType.PowerSupply);
         List<HardwareComponentView> memoryModules = FindAll(installed, HardwareComponentType.Memory);
@@ -175,15 +193,7 @@ public sealed class CompatibilityChecker : MonoBehaviour
             skipped.Add("Мощность БП: для проверки необходимы установленный БП, процессор и видеокарта.");
         }
 
-        bool compatible = errors.Count == 0 && skipped.Count == 0 && performedChecks > 0;
-        string report = BuildReport(compatible, performedChecks, errors, skipped);
-
-        if (compatible)
-            Debug.Log(report, this);
-        else
-            Debug.LogWarning(report, this);
-
-        CheckCompleted?.Invoke(compatible, report);
+        return errors.Count == 0 && skipped.Count == 0 && performedChecks > 0;
     }
 
     private static List<HardwareComponentView> FindInstalledComponents()

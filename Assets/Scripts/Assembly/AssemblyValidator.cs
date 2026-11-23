@@ -36,13 +36,24 @@ public sealed class AssemblyValidator : MonoBehaviour
     /// <summary>Назначается на Button -> OnClick() в Inspector.</summary>
     public void ValidateAssembly()
     {
-        List<string> issues = new List<string>();
+        bool complete = EvaluateSlots(out int installed, out int required, out var issues);
+        string report = BuildReport(complete, installed, required, issues);
+        if (resultPanel != null)
+            resultPanel.ShowResult(complete, report);
+        ValidationCompleted?.Invoke(complete, report);
+        if (complete) Debug.Log(report, this);
+        else Debug.LogWarning(report, this);
+    }
+
+    public bool EvaluateSlots(out int installedCount, out int requiredCount, out List<string> issues)
+    {
+        issues = new List<string>();
         HashSet<ComponentSlot> checkedSlots = new HashSet<ComponentSlot>();
         HashSet<HardwareComponentView> checkedComponents =
             new HashSet<HardwareComponentView>();
 
-        int requiredCount = 0;
-        int installedCount = 0;
+        requiredCount = 0;
+        installedCount = 0;
 
         if (requiredSlots == null || requiredSlots.Count == 0)
         {
@@ -114,20 +125,8 @@ public sealed class AssemblyValidator : MonoBehaviour
             }
         }
 
-        bool isComplete = requiredCount > 0 && issues.Count == 0 &&
+        return requiredCount > 0 && issues.Count == 0 &&
                           installedCount == requiredCount;
-
-        string report = BuildReport(isComplete, installedCount, requiredCount, issues);
-
-        if (resultPanel != null)
-            resultPanel.ShowResult(isComplete, report);
-
-        if (isComplete)
-            Debug.Log(report, this);
-        else
-            Debug.LogWarning(report, this);
-
-        ValidationCompleted?.Invoke(isComplete, report);
     }
 
     private static string BuildReport(
