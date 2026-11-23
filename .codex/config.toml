@@ -1,0 +1,3 @@
+[mcp_servers.unity]
+command = 'C:\Users\Lenovo\AppData\Local\Unity\bin\unity.exe'
+args = ['mcp', '--project-path', 'G:\Projects\PC Assembly Simulator']
