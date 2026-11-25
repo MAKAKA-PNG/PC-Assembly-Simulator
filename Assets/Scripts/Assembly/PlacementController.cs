@@ -27,8 +27,43 @@ public sealed class PlacementController : MonoBehaviour
     public event System.Action<string> PlacementRejected;
     public HardwareComponentView SelectedComponent => selectedComponent;
 
+    private ComponentSlot[] slots;
+    private readonly Vector2[] outline = new Vector2[8];
+
+    private void OnGUI()
+    {
+        if (!selectedComponent || WorkshopMenu.IsPaused || Event.current.type != EventType.Repaint) return;
+        var matrix = GUI.matrix;
+        Color tint = GUI.color;
+        GUI.color = new Color(.23f, 1f, .75f, .94f);
+        foreach (var slot in slots)
+        {
+            if (!slot.CanAccept(selectedComponent, out _) || !(slot.GetComponent<Collider>() is BoxCollider box)) continue;
+            bool visible = true;
+            for (int i = 0; i < 8; i++)
+            {
+                var sign = new Vector3((i & 1) == 0 ? -.5f : .5f, (i & 2) == 0 ? -.5f : .5f, (i & 4) == 0 ? -.5f : .5f);
+                Vector3 pos = worldCamera.WorldToScreenPoint(box.transform.TransformPoint(box.center + Vector3.Scale(sign, box.size)));
+                visible &= pos.z > 0;
+                outline[i] = new Vector2(pos.x, Screen.height - pos.y);
+            }
+            if (!visible) continue;
+            for (int i = 0; i < 8; i++)
+                for (int bit = 1; bit <= 4; bit *= 2)
+                {
+                    if ((i & bit) != 0) continue;
+                    var delta = outline[i | bit] - outline[i];
+                    GUIUtility.RotateAroundPivot(Mathf.Atan2(delta.y, delta.x) * Mathf.Rad2Deg, outline[i]);
+                    GUI.DrawTexture(new Rect(outline[i].x, outline[i].y, delta.magnitude, 2f), Texture2D.whiteTexture);
+                    GUI.matrix = matrix;
+                }
+        }
+        GUI.color = tint;
+    }
+
     private void Awake()
     {
+        slots = FindObjectsByType<ComponentSlot>();
         if (selectionController == null)
             selectionController = GetComponent<ComponentSelectionController>();
 

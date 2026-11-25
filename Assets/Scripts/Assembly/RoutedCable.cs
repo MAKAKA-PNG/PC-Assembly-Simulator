@@ -5,6 +5,25 @@ using UnityEngine;
 public sealed class RoutedCable : MonoBehaviour
 {
     private Transform first, second;
+    private MeshFilter sourceBody, destinationBody;
+
+    private Vector3 EdgeExit(Vector3 point, MeshFilter body)
+    {
+        if (!body || !body.sharedMesh) return point;
+        Bounds bounds = body.sharedMesh.bounds;
+        Vector3 min = Vector3.positiveInfinity, max = Vector3.negativeInfinity;
+        for (int i = 0; i < 8; i++)
+        {
+            var sign = new Vector3((i & 1) == 0 ? -1 : 1, (i & 2) == 0 ? -1 : 1, (i & 4) == 0 ? -1 : 1);
+            var corner = transform.InverseTransformPoint(body.transform.TransformPoint(bounds.center + Vector3.Scale(bounds.extents, sign)));
+            min = Vector3.Min(min, corner);
+            max = Vector3.Max(max, corner);
+        }
+        float x = point.x - min.x < max.x - point.x ? min.x - .04f : max.x + .04f;
+        float z = point.z - min.z < max.z - point.z ? min.z - .04f : max.z + .04f;
+        return Mathf.Abs(x - point.x) < Mathf.Abs(z - point.z) ? new Vector3(x, point.y, point.z) : new Vector3(point.x, point.y, z);
+    }
+
     private Vector3 previousStart, previousEnd;
     private Mesh tube;
     private int lane;
@@ -15,6 +34,8 @@ public sealed class RoutedCable : MonoBehaviour
         transform.SetParent(tray, false);
         first = source.transform;
         second = destination.transform;
+        sourceBody = source.ExpectedOwnerType == HardwareComponentType.Case ? null : source.Owner.GetComponent<MeshFilter>();
+        destinationBody = destination.Owner.GetComponent<MeshFilter>();
         lane = (int)source.Type;
         radius = Mathf.Clamp(width * .65f, .013f, .035f) * (lane >= 6 ? .67f : 1f);
         tube = new Mesh { name = source.PortId + " jacket" };
@@ -38,11 +59,8 @@ public sealed class RoutedCable : MonoBehaviour
         // The tray lies in the local XZ plane. Keep long runs against its inner face.
         float rail = -1.32f + lane * .035f;
         float level = .055f + radius;
-        Vector3 outlet = a;
-        if (lane <= (int)ConnectorType.SataData)
-            outlet.z += lane == (int)ConnectorType.CpuFan ? .10f : -.11f;
-        Vector3 entry = b;
-        entry.z += .08f;
+        Vector3 outlet = EdgeExit(a, sourceBody);
+        Vector3 entry = EdgeExit(b, destinationBody);
         var bends = new List<Vector3> { a, outlet, new Vector3(outlet.x, level, outlet.z),
             new Vector3(outlet.x, level, rail), new Vector3(entry.x, level, rail),
             new Vector3(entry.x, level, entry.z), entry, b };

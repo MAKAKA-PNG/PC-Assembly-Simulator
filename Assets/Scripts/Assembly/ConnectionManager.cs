@@ -120,14 +120,14 @@ public sealed class ConnectionManager : MonoBehaviour
 
         if (port.IsConnected)
         {
-            SetStatus($"Разъём {port.PortId} уже подключён к {port.ConnectedPort.PortId}.");
+            SetStatus($"Разъём {port.Label} уже подключён к {port.ConnectedPort.Label}.");
             return;
         }
 
         if (firstSelectedPort == null)
         {
             firstSelectedPort = port;
-            SetStatus($"Выбран {port.PortId}. Теперь выберите второй совместимый разъём.");
+            SetStatus($"Выбран {port.Label}. Теперь выберите второй совместимый разъём.");
             return;
         }
 
@@ -214,7 +214,7 @@ public sealed class ConnectionManager : MonoBehaviour
             Line = line
         });
 
-        message = $"Соединение создано: {source.PortId} → {destination.PortId} ({source.Type}).";
+        message = $"Соединение создано: {source.Label} → {destination.Label}.";
         return true;
     }
 
@@ -229,7 +229,7 @@ public sealed class ConnectionManager : MonoBehaviour
 
         if (owner.Data.ComponentType != port.ExpectedOwnerType)
         {
-            message = $"Разъём {port.PortId} должен принадлежать компоненту типа {port.ExpectedOwnerType}, " +
+            message = $"Разъём {port.Label} должен принадлежать компоненту типа {port.ExpectedOwnerType}, " +
                       $"но найден {owner.Data.ComponentType}.";
             return false;
         }

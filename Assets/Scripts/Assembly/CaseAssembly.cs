@@ -188,5 +188,6 @@ public sealed class CaseAssembly : MonoBehaviour
         front.gameObject.SetActive(stage >= 1);
         cover.gameObject.SetActive(stage >= 2);
         Stage = stage;
+        if (Finished) startup.PresentWorkstation();
     }
 }

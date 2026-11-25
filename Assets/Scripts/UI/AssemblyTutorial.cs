@@ -102,12 +102,13 @@ public sealed class AssemblyTutorial : MonoBehaviour
         {
             if (shown >= 0 && shown != phase) messageUntil = 0;
             heading.text = passed ? "Обучение завершено" :
-                $"Шаг {phase + 1} из {steps.Length + 2}" + (port != null ? $"   ·   {port.PortId}" : "");
+                $"Шаг {phase + 1} из {steps.Length + 2}" + (port != null ? $"   ·   {port.Label}" : "");
             shown = phase;
             shownPort = port;
         }
 
-        string text = index < steps.Length ? steps[index].Instruction :
+        string text = index < steps.Length ? (steps[index].First && steps[index].Second ?
+            $"Соедините: {steps[index].First.Label} → {steps[index].Second.Label}." : steps[index].Instruction) :
             passed ? "ПК собран, кабели подключены, совместимость подтверждена." :
             !chassis.Finished ? chassis.NextAction() ?? "Завершите крепление корпуса." :
             chassis.NextAction() ?? "Нажмите «Диагностика ПК», чтобы получить результат и оценку.";

@@ -11,6 +11,24 @@ public sealed class WorkstationPower : MonoBehaviour
     [SerializeField] private Collider caseSwitch;
     [SerializeField] private GameObject screen;
     [SerializeField] private TMP_Text screenText;
+    [SerializeField] private Transform workstation, monitorSocket;
+    private bool moved;
+    public void PresentWorkstation()
+    {
+        if (moved || !workstation) return;
+        Vector3 delta = new Vector3(-2.70f, workstation.position.y, -.57f) - workstation.position;
+        workstation.position += delta;
+        monitorSocket.position += delta;
+        // Follow the rear of the case to the tabletop, then approach the monitor from behind.
+        Vector3 end = monitorSocket.position;
+        var low = video[2].position;
+        video[3].position = new Vector3(low.x, low.y, end.z + .09f);
+        video[4].position = new Vector3(end.x + .16f, low.y, end.z + .09f);
+        video[5].position = new Vector3(end.x, low.y, end.z + .09f);
+        video[6].position = new Vector3(end.x, end.y, end.z + .09f);
+        video[7].position = end;
+        moved = true;
+    }
     private CaseAssembly chassis;
     private AssemblyDiagnostics diagnostics;
     public int Connections { get; private set; }

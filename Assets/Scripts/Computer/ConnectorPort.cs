@@ -31,6 +31,23 @@ public sealed class ConnectorPort : MonoBehaviour
     [SerializeField] private ConnectorRole role;
     [SerializeField] private HardwareComponentType expectedOwnerType;
 
+    public string DisplayName => connectorType switch
+    {
+        ConnectorType.Atx24Pin => "Основное питание платы",
+        ConnectorType.CpuEps8Pin => "Питание процессора",
+        ConnectorType.Pcie8Pin => "Питание видеокарты",
+        ConnectorType.CpuFan => "Вентилятор процессора",
+        ConnectorType.SataPower => "Питание накопителя",
+        ConnectorType.SataData => "Данные накопителя",
+        ConnectorType.PowerSwitch => "Кнопка включения",
+        ConnectorType.ResetSwitch => "Кнопка перезагрузки",
+        ConnectorType.PowerLed => "Индикатор питания",
+        ConnectorType.DriveLed => "Индикатор накопителя",
+        ConnectorType.FrontUsb2 => "Передний USB 2",
+        ConnectorType.FrontUsb3 => "Передний USB 3",
+        _ => "Наушники и микрофон"
+    };
+    public string Label => DisplayName + " · " + (Owner && Owner.Data ? Owner.Data.DisplayName : name);
     public string PortId => portId;
     public ConnectorType Type => connectorType;
     public ConnectorRole Role => role;
