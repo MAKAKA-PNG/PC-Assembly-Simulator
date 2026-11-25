@@ -13,6 +13,7 @@ public sealed class ComponentSlot : MonoBehaviour
     [SerializeField] private HardwareComponentType acceptedType = HardwareComponentType.Processor;
     [SerializeField] private Transform snapPoint;
     [SerializeField] private ComponentSlot prerequisiteSlot;
+    [SerializeField] private CpuSocketLatch latch;
 
     public string SlotId => slotId;
     public HardwareComponentType AcceptedType => acceptedType;
@@ -60,6 +61,16 @@ public sealed class ComponentSlot : MonoBehaviour
             return false;
         }
 
+        if (latch && acceptedType == HardwareComponentType.Processor && !latch.ReadyForCpu)
+        {
+            reason = "Поднимите рычаг сокета перед установкой процессора.";
+            return false;
+        }
+        if (latch && acceptedType == HardwareComponentType.CpuCooler && !latch.Locked)
+        {
+            reason = "Опустите рычаг и зафиксируйте процессор перед установкой кулера.";
+            return false;
+        }
         reason = string.Empty;
         return true;
     }

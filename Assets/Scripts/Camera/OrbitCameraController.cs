@@ -21,7 +21,7 @@ public sealed class OrbitCameraController : MonoBehaviour
 
     [Header("Zoom")]
     [SerializeField] private float distance = 4.5f;
-    [SerializeField] private float minDistance = 1.5f;
+    [SerializeField] private float minDistance = 0.5f;
     [SerializeField] private float maxDistance = 9f;
     [SerializeField] private float zoomSensitivity = 0.5f;
 
@@ -57,6 +57,7 @@ public sealed class OrbitCameraController : MonoBehaviour
 
     private void LateUpdate()
     {
+        if (WorkshopMenu.InputBlocked) return;
         if (target == null || Mouse.current == null)
             return;
 

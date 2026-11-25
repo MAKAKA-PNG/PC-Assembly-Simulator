@@ -8,6 +8,7 @@ public sealed class AssemblyValidationPanel : MonoBehaviour
     [SerializeField] private GameObject panelRoot;
     [SerializeField] private TMP_Text titleText;
     [SerializeField] private TMP_Text detailsText;
+    public bool Visible => panelRoot != null && panelRoot.activeSelf;
 
     private void Awake()
     {
@@ -51,6 +52,7 @@ public sealed class AssemblyValidationPanel : MonoBehaviour
 
     private void Update()
     {
+        if (WorkshopMenu.InputBlocked) return;
         if (panelRoot != null && panelRoot.activeSelf &&
             Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
             Hide();

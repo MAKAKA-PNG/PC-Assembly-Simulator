@@ -24,6 +24,7 @@ public sealed class PlacementController : MonoBehaviour
     private bool previewApplied;
 
     public bool IsPlacing => selectedComponent != null;
+    public event System.Action<string> PlacementRejected;
     public HardwareComponentView SelectedComponent => selectedComponent;
 
     private void Awake()
@@ -63,6 +64,7 @@ public sealed class PlacementController : MonoBehaviour
 
     private void Update()
     {
+        if (WorkshopMenu.InputBlocked) return;
         if (!IsPlacing)
             return;
 
@@ -120,12 +122,14 @@ public sealed class PlacementController : MonoBehaviour
 
         if (hoveredSlot == null)
         {
+            PlacementRejected?.Invoke("Наведите курсор на посадочное место. Esc отменяет выбор.");
             Debug.Log("Наведите курсор на посадочное место. Esc — отмена установки.");
             return;
         }
 
         if (!hoveredSlot.TryInstall(selectedComponent, out string reason))
         {
+            PlacementRejected?.Invoke(reason);
             Debug.LogWarning(reason, hoveredSlot);
             return;
         }

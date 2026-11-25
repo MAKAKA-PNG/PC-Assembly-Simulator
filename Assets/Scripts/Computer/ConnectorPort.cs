@@ -7,7 +7,8 @@ public enum ConnectorType
     Pcie8Pin,
     CpuFan,
     SataPower,
-    SataData
+    SataData,
+    PowerSwitch, ResetSwitch, PowerLed, DriveLed, FrontUsb2, FrontUsb3, FrontAudio
 }
 
 public enum ConnectorRole

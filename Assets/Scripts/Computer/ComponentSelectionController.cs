@@ -21,6 +21,7 @@ public sealed class ComponentSelectionController : MonoBehaviour
     public event Action<HardwareComponentData> ComponentSelected;
     public event Action SelectionCleared;
     public HardwareComponentView CurrentSelection { get; private set; }
+    public ConnectorPort HoveredPort { get; private set; }
     private RaycastHit[] hitBuffer = new RaycastHit[16];
     private Renderer hoveredRenderer;
     private MaterialPropertyBlock previousProperties;
@@ -43,6 +44,7 @@ public sealed class ComponentSelectionController : MonoBehaviour
 
     private void Update()
     {
+        if (WorkshopMenu.InputBlocked) return;
         if (Mouse.current == null ||
             (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()))
         {
@@ -64,6 +66,7 @@ public sealed class ComponentSelectionController : MonoBehaviour
     private void UpdatePointer(bool select)
     {
         ResolvePointer(out var port, out var component, out var selectable);
+        HoveredPort = port;
         var part = selectable != null ? selectable : component;
         SetHover(port != null ? port.GetComponent<Renderer>() :
             part != null ? part.GetComponent<Renderer>() : null, port != null);
@@ -123,6 +126,7 @@ public sealed class ComponentSelectionController : MonoBehaviour
 
     private void SetHover(Renderer target, bool isPort)
     {
+        if (!isPort) HoveredPort = null;
         if (hoveredRenderer == target)
             return;
         if (hoveredRenderer != null)

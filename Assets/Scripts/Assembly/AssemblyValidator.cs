@@ -32,6 +32,16 @@ public sealed class AssemblyValidator : MonoBehaviour
     [SerializeField] private AssemblyValidationPanel resultPanel;
 
     public event Action<bool, string> ValidationCompleted;
+    public void CountSlots(out int occupied, out int total)
+    {
+        total = occupied = 0;
+        foreach (var entry in requiredSlots)
+        {
+            if (entry == null || !entry.Required) continue;
+            total++;
+            if (entry.Slot != null && entry.Slot.IsOccupied) occupied++;
+        }
+    }
 
     /// <summary>Назначается на Button -> OnClick() в Inspector.</summary>
     public void ValidateAssembly()

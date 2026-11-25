@@ -55,10 +55,11 @@ public sealed class ComponentInfoPanel : MonoBehaviour
             titleText.text = data.DisplayName;
 
         if (typeText != null)
-            typeText.text = data.ComponentType.ToString();
+            typeText.text = "ХАРАКТЕРИСТИКИ";
 
         if (descriptionText != null)
-            descriptionText.text = data.Description;
+            descriptionText.text = data.Description == data.DisplayName + " в составе учебной сборки."
+                ? string.Empty : data.Description;
 
         if (compatibilityText != null)
             compatibilityText.text = data.CompatibilityNotes;
@@ -71,7 +72,10 @@ public sealed class ComponentInfoPanel : MonoBehaviour
                 foreach (string item in data.Specifications)
                 {
                     if (!string.IsNullOrWhiteSpace(item))
-                        builder.AppendLine("• " + item);
+                    {
+                        if (builder.Length > 0) builder.Append("   ·   ");
+                        builder.Append(item);
+                    }
                 }
             }
 

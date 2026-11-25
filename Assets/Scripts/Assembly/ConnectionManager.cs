@@ -26,23 +26,29 @@ public sealed class ConnectionManager : MonoBehaviour
 
     [Header("Connection visuals")]
     [SerializeField, Min(0.001f)] private float lineWidth = 0.025f;
-    [SerializeField] private Color connectionColor = new Color(0.15f, 0.85f, 1f, 1f);
+    [SerializeField] private Material cableJacket;
+    [SerializeField] private Transform cableTray;
 
     private readonly List<ConnectionRecord> connections = new List<ConnectionRecord>();
     private ConnectorPort firstSelectedPort;
-    private Material lineMaterial;
+
 
     public event Action<string> StatusChanged;
     public event Action<int> ConnectionCountChanged;
 
     public int ConnectionCount => connections.Count;
+    public void GetPair(int index, out string source, out string destination)
+    {
+        source = connections[index].First.PortId;
+        destination = connections[index].Second.PortId;
+    }
     public ConnectorPort FirstSelectedPort => firstSelectedPort;
 
     private sealed class ConnectionRecord
     {
         public ConnectorPort First;
         public ConnectorPort Second;
-        public LineRenderer Line;
+        public RoutedCable Line;
     }
 
     private void Awake()
@@ -56,11 +62,12 @@ public sealed class ConnectionManager : MonoBehaviour
         if (worldCamera == null)
             Debug.LogError("ConnectionManager: назначьте World Camera.", this);
 
-        lineMaterial = CreateLineMaterial();
+
     }
 
     private void Update()
     {
+        if (WorkshopMenu.InputBlocked) return;
         if (Mouse.current == null || !Mouse.current.leftButton.wasPressedThisFrame)
             return;
 
@@ -198,7 +205,8 @@ public sealed class ConnectionManager : MonoBehaviour
             return false;
         }
 
-        LineRenderer line = CreateConnectionLine(source.transform.position, destination.transform.position);
+        var line = new GameObject(source.PortId + " cable").AddComponent<RoutedCable>();
+        line.Initialize(source, destination, cableTray, cableJacket, lineWidth);
         connections.Add(new ConnectionRecord
         {
             First = source,
@@ -288,59 +296,4 @@ public sealed class ConnectionManager : MonoBehaviour
         StatusChanged?.Invoke(message);
     }
 
-    private LineRenderer CreateConnectionLine(Vector3 start, Vector3 end)
-    {
-        GameObject lineObject = new GameObject("ConnectionLine");
-        lineObject.transform.SetParent(transform, true);
-
-        LineRenderer line = lineObject.AddComponent<LineRenderer>();
-        line.useWorldSpace = true;
-        line.positionCount = 2;
-        line.SetPosition(0, start);
-        line.SetPosition(1, end);
-        line.startWidth = lineWidth;
-        line.endWidth = lineWidth;
-        line.startColor = connectionColor;
-        line.endColor = connectionColor;
-        line.numCapVertices = 4;
-        line.alignment = LineAlignment.View;
-        line.material = lineMaterial;
-        return line;
-    }
-
-    private Material CreateLineMaterial()
-    {
-        Shader shader = Shader.Find("Universal Render Pipeline/Unlit");
-        if (shader == null) shader = Shader.Find("Sprites/Default");
-        if (shader == null) shader = Shader.Find("Unlit/Color");
-        if (shader == null)
-        {
-            Debug.LogWarning("ConnectionManager: не найден Unlit shader. Линии могут отображаться без материала.", this);
-            return null;
-        }
-
-        Material material = new Material(shader);
-        if (material.HasProperty("_BaseColor")) material.SetColor("_BaseColor", connectionColor);
-        if (material.HasProperty("_Color")) material.SetColor("_Color", connectionColor);
-        return material;
-    }
-
-    private void LateUpdate()
-    {
-        // Обновляем линии при перемещении камеры или компонентов.
-        foreach (ConnectionRecord record in connections)
-        {
-            if (record.Line == null || record.First == null || record.Second == null)
-                continue;
-
-            record.Line.SetPosition(0, record.First.transform.position);
-            record.Line.SetPosition(1, record.Second.transform.position);
-        }
-    }
-
-    private void OnDestroy()
-    {
-        if (lineMaterial != null)
-            Destroy(lineMaterial);
-    }
 }
