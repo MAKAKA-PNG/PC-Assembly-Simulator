@@ -87,8 +87,8 @@ public sealed class ComponentSlot : MonoBehaviour
         }
 
         Transform target = SnapPoint;
-        component.transform.SetParent(target, true);
         component.transform.SetPositionAndRotation(target.position, target.rotation);
+        component.transform.SetParent(target, true);
 
         InstalledComponent = component;
         reason = string.Empty;

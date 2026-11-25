@@ -24,7 +24,7 @@ public sealed class AssemblyValidationPanel : MonoBehaviour
             panelRoot.SetActive(true);
 
         if (titleText != null)
-            titleText.text = success ? "Сборка завершена" : "Нужно исправить сборку";
+            titleText.text = success ? "Компьютер готов к работе" : "Проверка компьютера";
 
         if (detailsText != null)
             detailsText.text = report;

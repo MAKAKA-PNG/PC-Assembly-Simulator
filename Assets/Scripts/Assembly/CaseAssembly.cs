@@ -16,6 +16,7 @@ public sealed class CaseAssembly : MonoBehaviour
     [SerializeField] private Transform[] sideScrews;
     [SerializeField] private ComponentSlot cooler, graphics, drive;
     [SerializeField] private Transform[] coolerScrews, graphicsScrews, driveScrews;
+    private WorkstationPower startup;
     private Camera worldCamera;
     private AssemblyDiagnostics diagnostics;
     public int CoolerCount { get; private set; }
@@ -43,6 +44,7 @@ public sealed class CaseAssembly : MonoBehaviour
 
     private void Awake()
     {
+        startup = GetComponent<WorkstationPower>();
         worldCamera = Camera.main;
         diagnostics = GetComponent<AssemblyDiagnostics>();
         slots = GetComponent<AssemblyValidator>();
@@ -52,6 +54,7 @@ public sealed class CaseAssembly : MonoBehaviour
 
     public string NextAction()
     {
+        if (Finished) return startup.NextAction;
         if (Latch && Latch.ActionLabel != null) return Latch.ActionLabel;
         if (BoardReady) return "Винт платы · удерживайте ЛКМ на винте";
         if (PowerReady) return "Винт БП · удерживайте ЛКМ на винте";
@@ -65,7 +68,7 @@ public sealed class CaseAssembly : MonoBehaviour
         {
             0 => "Установить переднюю панель",
             1 => "Закрыть боковую крышку",
-            2 => "Поставить корпус вертикально",
+            2 => "Завершить монтаж корпуса",
             _ => null
         };
     }
@@ -147,6 +150,7 @@ public sealed class CaseAssembly : MonoBehaviour
     public void Advance()
     {
         if (WorkshopMenu.InputBlocked || NextAction() == null) return;
+        if (Finished) { startup.Advance(); return; }
         if (Latch && Latch.ActionLabel != null)
         {
             Latch.Toggle();
@@ -183,15 +187,6 @@ public sealed class CaseAssembly : MonoBehaviour
     {
         front.gameObject.SetActive(stage >= 1);
         cover.gameObject.SetActive(stage >= 2);
-        if (stage == 3 && Stage != 3)
-        {
-            rig.rotation = Quaternion.Euler(0, -60, -90);
-            float bottom = float.PositiveInfinity;
-            foreach (var renderer in rig.GetComponentsInChildren<Renderer>())
-                if (renderer.enabled) bottom = Mathf.Min(bottom, renderer.bounds.min.y);
-            rig.position += Vector3.up * (.149f - bottom);
-            Physics.SyncTransforms();
-        }
         Stage = stage;
     }
 }

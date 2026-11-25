@@ -35,10 +35,32 @@ public sealed class RoutedCable : MonoBehaviour
     {
         previousStart = a;
         previousEnd = b;
-        float rail = -1.17f + lane * .035f;
-        float level = Mathf.Max(a.y, b.y) + .085f + (lane % 4) * .024f;
-        var bends = new List<Vector3> { a, new Vector3(a.x, level, a.z), new Vector3(a.x, level, rail),
-            new Vector3(b.x, level, rail), new Vector3(b.x, level, b.z), new Vector3(b.x, b.y, b.z) };
+        // The tray lies in the local XZ plane. Keep long runs against its inner face.
+        float rail = -1.32f + lane * .035f;
+        float level = .055f + radius;
+        Vector3 outlet = a;
+        if (lane <= (int)ConnectorType.SataData)
+            outlet.z += lane == (int)ConnectorType.CpuFan ? .10f : -.11f;
+        Vector3 entry = b;
+        entry.z += .08f;
+        var bends = new List<Vector3> { a, outlet, new Vector3(outlet.x, level, outlet.z),
+            new Vector3(outlet.x, level, rail), new Vector3(entry.x, level, rail),
+            new Vector3(entry.x, level, entry.z), entry, b };
+        BuildTube(bends);
+    }
+
+    public void FitFixedRoute(List<Vector3> points, Material jacket, float cableRadius)
+    {
+        radius = cableRadius;
+        tube = new Mesh { name = name };
+        GetComponent<MeshFilter>().sharedMesh = tube;
+        GetComponent<MeshRenderer>().sharedMaterial = jacket;
+        BuildTube(points);
+        enabled = false;
+    }
+
+    private void BuildTube(List<Vector3> bends)
+    {
         for (int i = bends.Count - 1; i > 0; i--)
             if ((bends[i] - bends[i-1]).sqrMagnitude < .000001f) bends.RemoveAt(i);
         if (bends.Count < 2) { tube.Clear(); return; }

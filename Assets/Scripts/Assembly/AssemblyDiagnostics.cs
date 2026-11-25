@@ -17,47 +17,67 @@ public sealed class AssemblyDiagnostics : MonoBehaviour
     public int CableCount => requiredCables.Length;
     public event Action<bool> CheckFinished;
 
-    public void CheckAssembly()
+    private static string CableName(ConnectorType type) => type switch
     {
-        bool installed = GetComponent<AssemblyValidator>().EvaluateSlots(
-            out int filled, out int total, out var slotIssues);
-        bool compatible = GetComponent<CompatibilityChecker>().Evaluate(
-            out int checks, out var errors, out var skipped);
+        ConnectorType.Atx24Pin => "главное питание материнской платы (24 контакта)",
+        ConnectorType.CpuEps8Pin => "питание процессора от блока питания",
+        ConnectorType.Pcie8Pin => "дополнительное питание видеокарты",
+        ConnectorType.CpuFan => "вентилятор процессора к материнской плате",
+        ConnectorType.SataPower => "питание накопителя от блока питания",
+        ConnectorType.SataData => "кабель данных накопителя к плате",
+        ConnectorType.PowerSwitch => "кнопку включения корпуса к плате",
+        ConnectorType.ResetSwitch => "кнопку перезагрузки корпуса к плате",
+        ConnectorType.PowerLed => "индикатор питания корпуса к плате",
+        ConnectorType.DriveLed => "индикатор накопителя к плате",
+        ConnectorType.FrontUsb2 => "передние порты USB 2 к плате",
+        ConnectorType.FrontUsb3 => "передние порты USB 3 к плате",
+        _ => "передние гнёзда наушников и микрофона к плате"
+    };
 
+    private int CountCables(out string next)
+    {
         int connected = 0;
-        var missing = new System.Collections.Generic.List<string>();
+        next = null;
         foreach (var cable in requiredCables)
         {
-            if (cable.Source != null && cable.Destination != null &&
-                cable.Source.ConnectedPort == cable.Destination &&
-                cable.Destination.ConnectedPort == cable.Source)
-                connected++;
-            else
-                missing.Add($"{cable.Source?.PortId ?? "?"} → {cable.Destination?.PortId ?? "?"}");
+            if (cable.Source && cable.Destination && cable.Source.ConnectedPort == cable.Destination &&
+                cable.Destination.ConnectedPort == cable.Source) connected++;
+            else if (next == null && cable.Source) next = CableName(cable.Source.Type);
         }
+        return connected;
+    }
 
+    public bool ReadyToBoot() =>
+        GetComponent<CaseAssembly>().Finished && CableCount > 0 && CountCables(out _) == CableCount &&
+        GetComponent<AssemblyValidator>().EvaluateSlots(out _, out _, out _) &&
+        GetComponent<CompatibilityChecker>().Evaluate(out _, out _, out _);
+
+    public void CheckAssembly()
+    {
+        bool installed = GetComponent<AssemblyValidator>().EvaluateSlots(out int filled, out int total, out var issues);
+        bool compatible = GetComponent<CompatibilityChecker>().Evaluate(out _, out var errors, out _);
         var chassis = GetComponent<CaseAssembly>();
-        bool complete = chassis.Finished && installed && compatible && requiredCables.Length > 0 &&
-                        connected == requiredCables.Length;
-        var report = new StringBuilder();
-        int score = Mathf.RoundToInt(32f * filled / Mathf.Max(1, total) +
-            24f * connected / Mathf.Max(1, requiredCables.Length)) +
-            Mathf.RoundToInt(16f * chassis.ScrewCount / chassis.TotalScrews) + 6 * chassis.Stage + (compatible ? 10 : 0);
+        var power = GetComponent<WorkstationPower>();
+        int connected = CountCables(out string nextCable);
+        bool complete = installed && compatible && connected == CableCount && chassis.Finished && power.Running && power.Connections == 3;
+        int score = Mathf.RoundToInt(30f * filled / Mathf.Max(1, total) + 24f * connected / Mathf.Max(1, CableCount) +
+            18f * chassis.ScrewCount / chassis.TotalScrews + 3f * chassis.Stage + (compatible ? 9 : 0) +
+            2 * power.Connections + (power.Running ? 4 : 0));
         int best = WorkshopProgress.Record(score);
-        report.AppendLine($"Результат: {score}/100    Лучший: {best}/100");
-        report.AppendLine($"Установка: {filled}/{total}    Кабели: {connected}/{requiredCables.Length}");
-        report.AppendLine($"Винты платы: {chassis.BoardCount}/4    Винты БП: {chassis.PowerCount}/4    Крышка: {chassis.SideCount}/4");
-        report.AppendLine($"Кулер: {chassis.CoolerCount}/4    Видеокарта: {chassis.GraphicsCount}/1    SSD: {chassis.DriveCount}/4");
-        if (!chassis.Finished) report.AppendLine(chassis.NextAction() ?? "Завершите монтаж и поставьте корпус вертикально.");
-        report.AppendLine(compatible ? $"Совместимость подтверждена ({checks} проверок)." :
-            $"Совместимость не подтверждена. Проверено: {checks}, пропущено: {skipped.Count}.");
-        foreach (string issue in slotIssues)
-            report.AppendLine(issue);
-        foreach (string error in errors)
-            report.AppendLine(error);
-        if (missing.Count > 0)
-            report.AppendLine("Подключите:\n" + string.Join("\n", missing));
-        GetComponent<AssemblyValidationPanel>().ShowResult(complete, report.ToString().TrimEnd());
+        var report = new StringBuilder();
+        report.AppendLine($"<color=#77E4CE><b>{score} / 100</b></color>     Лучший результат  {best}");
+        report.AppendLine();
+        report.AppendLine($"Комплектующие    <b>{filled} / {total}</b>       Винты    <b>{chassis.ScrewCount} / {chassis.TotalScrews}</b>");
+        report.AppendLine($"Кабели внутри корпуса    <b>{connected} / {CableCount}</b>");
+        report.AppendLine($"Розетка, монитор и сеть    <b>{power.Connections} / 3</b>");
+        report.AppendLine();
+        report.AppendLine(complete ? "<color=#77E4CE>ПРОВЕРКА ПРОЙДЕНА</color>" : "<color=#FFD58C>СЛЕДУЮЩЕЕ ДЕЙСТВИЕ</color>");
+        if (!installed && issues.Count > 0) report.Append(issues[0]);
+        else if (!compatible && errors.Count > 0) report.Append(errors[0]);
+        else if (nextCable != null) report.Append("Подключите " + nextCable + ".");
+        else if (!complete) report.Append(chassis.NextAction() ?? "Проверьте монтаж деталей.");
+        else report.Append("Компьютер загрузился. Изображение выведено на монитор.");
+        GetComponent<AssemblyValidationPanel>().ShowResult(complete, report.ToString());
         CheckFinished?.Invoke(complete);
         GetComponent<WorkshopProgress>().Save();
     }

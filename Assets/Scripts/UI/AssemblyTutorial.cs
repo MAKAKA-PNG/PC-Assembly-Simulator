@@ -110,7 +110,7 @@ public sealed class AssemblyTutorial : MonoBehaviour
         string text = index < steps.Length ? steps[index].Instruction :
             passed ? "ПК собран, кабели подключены, совместимость подтверждена." :
             !chassis.Finished ? chassis.NextAction() ?? "Завершите крепление корпуса." :
-            "Нажмите «Диагностика ПК», чтобы получить результат и оценку.";
+            chassis.NextAction() ?? "Нажмите «Диагностика ПК», чтобы получить результат и оценку.";
         if (Time.unscaledTime < messageUntil) text = message;
         else if ((index == 1 || index == 2) && chassis.Latch && chassis.Latch.ActionLabel != null)
             text = "Нажмите «" + chassis.Latch.ActionLabel + "».";

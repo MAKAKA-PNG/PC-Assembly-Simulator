@@ -234,7 +234,7 @@ public sealed class ConnectionManager : MonoBehaviour
             return false;
         }
 
-        if (requireInstalledComponents && !owner.IsInstalled)
+        if (requireInstalledComponents && owner.Data.ComponentType != HardwareComponentType.Case && !owner.IsInstalled)
         {
             message = $"Сначала установите комплектующее {owner.Data.DisplayName}.";
             return false;

@@ -9,7 +9,8 @@ public sealed class WorkshopProgress : MonoBehaviour
     {
         public string[] parts, sources, destinations;
         public int board, power, side, stage, cooling, gpu, storage;
-        public bool practice;
+        public int external;
+        public bool running, practice;
         public bool latchOpen;
     }
     [SerializeField] private ComponentSlot[] slots;
@@ -54,6 +55,7 @@ public sealed class WorkshopProgress : MonoBehaviour
             manager.TryConnect(Array.Find(ports, p => p.PortId == s.sources[i]),
                 Array.Find(ports, p => p.PortId == s.destinations[i]), out _);
         GetComponent<CaseAssembly>().Restore(s.board, s.power, s.stage, s.side, s.cooling, s.gpu, s.storage);
+        GetComponent<WorkstationPower>().Restore(s.external, s.running);
         return s.practice;
     }
 
@@ -68,6 +70,7 @@ public sealed class WorkshopProgress : MonoBehaviour
             sources = new string[manager.ConnectionCount], destinations = new string[manager.ConnectionCount],
             board = chassis.BoardCount, power = chassis.PowerCount, cooling = chassis.CoolerCount, gpu = chassis.GraphicsCount, storage = chassis.DriveCount,
             side = chassis.SideCount, stage = chassis.Stage,
+            external = GetComponent<WorkstationPower>().Connections, running = GetComponent<WorkstationPower>().Running,
             practice = menu.IsPractice,
             latchOpen = chassis.Latch && chassis.Latch.IsOpen
         };
