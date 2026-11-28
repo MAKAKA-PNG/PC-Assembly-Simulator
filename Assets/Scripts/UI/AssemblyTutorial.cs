@@ -98,11 +98,13 @@ public sealed class AssemblyTutorial : MonoBehaviour
         if (!card.activeSelf) return;
         var port = selection.HoveredPort;
         int phase = index == steps.Length && chassis.Finished ? index + 1 : index;
+        phase += chassis.FinishedFasteningSteps;
+        if (chassis.Stage == 2 && chassis.SideCount < 4) phase++;
         if (shown != phase || port != shownPort)
         {
             if (shown >= 0 && shown != phase) messageUntil = 0;
             heading.text = passed ? "Обучение завершено" :
-                $"Шаг {phase + 1} из {steps.Length + 2}" + (port != null ? $"   ·   {port.Label}" : "");
+                $"Шаг {phase + 1} из {steps.Length + 8}" + (port != null ? $"   ·   {port.Label}" : "");
             shown = phase;
             shownPort = port;
         }
@@ -112,7 +114,19 @@ public sealed class AssemblyTutorial : MonoBehaviour
             passed ? "ПК собран, кабели подключены, совместимость подтверждена." :
             !chassis.Finished ? chassis.NextAction() ?? "Завершите крепление корпуса." :
             chassis.NextAction() ?? "Нажмите «Диагностика ПК», чтобы получить результат и оценку.";
-        if (Time.unscaledTime < messageUntil) text = message;
+        if (index < steps.Length && steps[index].First && steps[index].Second)
+        {
+            var first = steps[index].First;
+            var second = steps[index].Second;
+            var selected = connections.FirstSelectedPort;
+            if (selected == first || selected == second)
+                text = "2/2 · Выберите второй разъём: " + (selected == first ? second.Label : first.Label);
+            else if (!selected)
+                text = "1/2 · Выберите один из разъёмов: " + first.Label + " или " + second.Label;
+        }
+        string fastening = chassis.FasteningStep();
+        if (fastening != null) text = fastening;
+        else if (Time.unscaledTime < messageUntil) text = message;
         else if ((index == 1 || index == 2) && chassis.Latch && chassis.Latch.ActionLabel != null)
             text = "Нажмите «" + chassis.Latch.ActionLabel + "».";
         if (hint.text != text) hint.text = text;

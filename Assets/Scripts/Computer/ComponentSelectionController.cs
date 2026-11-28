@@ -24,6 +24,8 @@ public sealed class ComponentSelectionController : MonoBehaviour
     public ConnectorPort HoveredPort { get; private set; }
     private RaycastHit[] hitBuffer = new RaycastHit[16];
     private Renderer hoveredRenderer;
+    private string hoverName;
+    private GUIStyle tooltipStyle;
     private MaterialPropertyBlock previousProperties;
     private MaterialPropertyBlock hoverProperties;
     private static readonly int BaseColor = Shader.PropertyToID("_BaseColor");
@@ -66,10 +68,16 @@ public sealed class ComponentSelectionController : MonoBehaviour
     private void UpdatePointer(bool select)
     {
         ResolvePointer(out var port, out var component, out var selectable);
+        bool portChanged = HoveredPort != port;
         HoveredPort = port;
         var part = selectable != null ? selectable : component;
         SetHover(port != null ? port.GetComponent<Renderer>() :
             part != null ? part.GetComponent<Renderer>() : null, port != null);
+        if (port)
+        {
+            if (portChanged || hoverName == null) hoverName = port.Label;
+        }
+        else hoverName = part && part.Data ? part.Data.DisplayName : null;
         if (select && port == null)
             SelectComponent(selectable);
     }
@@ -126,6 +134,7 @@ public sealed class ComponentSelectionController : MonoBehaviour
 
     private void SetHover(Renderer target, bool isPort)
     {
+        if (!target) hoverName = null;
         if (!isPort) HoveredPort = null;
         if (hoveredRenderer == target)
             return;
@@ -139,6 +148,20 @@ public sealed class ComponentSelectionController : MonoBehaviour
         hoverProperties.SetColor(BaseColor, isPort ? new Color(1f, .58f, .08f) :
             new Color(.20f, .84f, .91f));
         target.SetPropertyBlock(hoverProperties);
+    }
+
+    private void OnGUI()
+    {
+        if (string.IsNullOrEmpty(hoverName) || WorkshopMenu.InputBlocked ||
+            Mouse.current == null || Event.current.type != EventType.Repaint) return;
+        tooltipStyle ??= new GUIStyle(GUI.skin.box) { alignment = TextAnchor.MiddleCenter };
+        tooltipStyle.fontSize = Mathf.Clamp(Screen.height / 48, 14, 24);
+        var content = new GUIContent(hoverName);
+        Vector2 size = tooltipStyle.CalcSize(content) + new Vector2(16, 6);
+        Vector2 cursor = Mouse.current.position.ReadValue();
+        GUI.Box(new Rect(Mathf.Clamp(cursor.x + 16, 0, Screen.width - size.x),
+            Mathf.Clamp(Screen.height - cursor.y + 18, 0, Screen.height - size.y), size.x, size.y),
+            content, tooltipStyle);
     }
 
     private void OnDisable()

@@ -73,18 +73,38 @@ public sealed class CaseAssembly : MonoBehaviour
         };
     }
 
-    private void Update()
+    private void CurrentFasteners(out Transform[] group, out int index)
     {
-        OverScrew = markerVisible = false;
-        if (WorkshopMenu.IsPaused) return;
-        Transform[] group = null;
-        int index = 0;
+        group = null;
+        index = 0;
         if (BoardReady) { group = boardScrews; index = BoardCount; }
         else if (PowerReady) { group = psuScrews; index = PowerCount; }
         else if (cooler.IsOccupied && CoolerCount < coolerScrews.Length) { group = coolerScrews; index = CoolerCount; }
         else if (graphics.IsOccupied && GraphicsCount < graphicsScrews.Length) { group = graphicsScrews; index = GraphicsCount; }
         else if (drive.IsOccupied && DriveCount < driveScrews.Length) { group = driveScrews; index = DriveCount; }
         else if (Stage == 2 && SideCount < sideScrews.Length) { group = sideScrews; index = SideCount; }
+    }
+
+    public int FinishedFasteningSteps =>
+        (BoardCount == boardScrews.Length ? 1 : 0) + (PowerCount == psuScrews.Length ? 1 : 0) +
+        (CoolerCount == coolerScrews.Length ? 1 : 0) + (GraphicsCount == graphicsScrews.Length ? 1 : 0) +
+        (DriveCount == driveScrews.Length ? 1 : 0) + (SideCount == sideScrews.Length ? 1 : 0);
+
+    public string FasteningStep()
+    {
+        CurrentFasteners(out var group, out int index);
+        if (group == null) return null;
+        string part = group == boardScrews ? "материнской платы" : group == psuScrews ? "блока питания" :
+            group == coolerScrews ? "кулера" : group == graphicsScrews ? "видеокарты" :
+            group == driveScrews ? "накопителя" : "боковой панели";
+        return $"Крепление {part} · винт {index + 1} из {group.Length}. Удерживайте ЛКМ на отмеченном винте.";
+    }
+
+    private void Update()
+    {
+        OverScrew = markerVisible = false;
+        if (WorkshopMenu.IsPaused) return;
+        CurrentFasteners(out var group, out int index);
         Transform target = group == null ? null : group[index];
         if (target != turning)
         {
